@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Dashboard</title>
+  <style>
+    :root {
+      --primary-color: #5C6BC0;
+      --primary-light: #8E99F3;
+      --primary-dark: #26418f;
+      --accent-color: #FF8A65;
+      --text-light: #FFFFFF;
+      --text-dark: #333333;
+      --background: #F5F7FA;
+      --card-bg: #FFFFFF;
+      --danger: #EF5350;
+      --success: #66BB6A;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: var(--background);
+      padding: 24px;
+      max-width: 900px;
+      margin: auto;
+      color: var(--text-dark);
+      line-height: 1.6;
+    }
+    
+    .card {
+      background: var(--card-bg);
+      padding: 24px;
+      margin-bottom: 20px;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 25px rgba(0,0,0,0.1);
+    }
+    
+    .header-card {
+      background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+      color: var(--text-light);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .student-photo {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background-color: var(--card-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary-color);
+      font-size: 32px;
+      font-weight: bold;
+    }
+    
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+    }
+    
+    h2, h3 {
+      margin-top: 0;
+      font-weight: 600;
+    }
+    
+    button {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      background: var(--primary-color);
+      color: white;
+      cursor: pointer;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      transition: background 0.2s ease;
+      box-shadow: 0 2px 10px rgba(92, 107, 192, 0.3);
+    }
+    
+    button:hover {
+      background: var(--primary-dark);
+      box-shadow: 0 4px 12px rgba(92, 107, 192, 0.4);
+    }
+    
+    textarea {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #E0E0E0;
+      resize: vertical;
+      margin-bottom: 12px;
+      font-family: inherit;
+    }
+    
+    textarea:focus {
+      outline: none;
+      border-color: var(--primary-light);
+      box-shadow: 0 0 0 2px rgba(92, 107, 192, 0.2);
+    }
+    
+    .message {
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: 500;
+    }
+    
+    .success { 
+      color: var(--success);
+      background-color: rgba(102, 187, 106, 0.1);
+    }
+    
+    .fail { 
+      color: var(--danger);
+      background-color: rgba(239, 83, 80, 0.1);
+    }
+    
+    .subject-card {
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    
+    .attendance-bar {
+      height: 8px;
+      background: #E0E0E0;
+      border-radius: 4px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+    
+    .attendance-progress {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.8s ease;
+    }
+    
+    .controls-card {
+      background: linear-gradient(135deg, #f5f7fa, #e4e7f0);
+    }
+    
+    .attendance-label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+    
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      color: #888;
+      font-size: 14px;
+    }
+    
+    .secondary-btn {
+      background: transparent;
+      color: var(--primary-color);
+      border: 1px solid var(--primary-color);
+      box-shadow: none;
+      margin-left: 12px;
+    }
+    
+    .secondary-btn:hover {
+      background: rgba(92, 107, 192, 0.1);
+    }
+    
+    /* Modal styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      visibility: hidden;
+      opacity: 0;
+      transition: visibility 0s linear 0.25s, opacity 0.25s;
+    }
+    
+    .modal-overlay.active {
+      visibility: visible;
+      opacity: 1;
+      transition-delay: 0s;
+    }
+    
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      width: 80%;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+      transform: translateY(-50px);
+      transition: transform 0.3s ease;
+    }
+    
+    .modal-overlay.active .modal-content {
+      transform: translateY(0);
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .close-modal {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #888;
+      padding: 0;
+      box-shadow: none;
+    }
+    
+    .close-modal:hover {
+      color: var(--danger);
+      background: none;
+    }
+    
+    .attendance-details {
+      margin-top: 20px;
+    }
+    
+    .attendance-date {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 15px;
+      margin-bottom: 8px;
+      border-radius: 8px;
+      background: #f5f7fa;
+    }
+    
+    .attendance-date.present {
+      border-left: 4px solid var(--success);
+    }
+    
+    .attendance-date.absent {
+      border-left: 4px solid var(--danger);
+    }
+    
+    .stats-container {
+      display: flex;
+      justify-content: space-around;
+      margin: 20px 0;
+    }
+    
+    .stat-box {
+      text-align: center;
+      padding: 15px;
+      background: #f5f7fa;
+      border-radius: 10px;
+      min-width: 100px;
+    }
+    
+    .stat-value {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: var(--primary-color);
+    }
+    
+    .stat-label {
+      font-size: 14px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="card header-card">
+    <div>
+      <h2>Student Dashboard</h2>
+      <p><strong>Name:</strong> John Doe &nbsp;|&nbsp; <strong>Roll No:</strong> 23CS045</p>
+      <p><strong>Department:</strong> Computer Science &nbsp;|&nbsp; <strong>Semester:</strong> 4th</p>
+    </div>
+    <div class="student-photo">JD</div>
+  </div>
+  
+  <h3>Subject Attendance</h3>
+  <div class="grid" id="attendance-section"></div>
+  
+  <div class="card controls-card">
+    <h3>Daily Check-in</h3>
+    <p>Mark your attendance for today's classes</p>
+    <button onclick="markAttendance()">Mark Attendance</button>
+    <p class="message" id="status-message"></p>
+    
+    <div id="issue-form" style="display:none; margin-top: 20px;">
+      <h4>Report an Issue</h4>
+      <textarea id="issue-text" rows="4" placeholder="Explain your issue..."></textarea><br>
+      <div>
+        <button onclick="submitReport()">Submit Report</button>
+        <button class="secondary-btn" onclick="cancelReport()">Cancel</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal for attendance details -->
+  <div class="modal-overlay" id="attendanceModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalSubjectTitle">Subject Attendance</h3>
+        <button class="close-modal" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="stats-container">
+        <div class="stat-box">
+          <div class="stat-value" id="totalClasses">0</div>
+          <div class="stat-label">Total Classes</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="attendedClasses">0</div>
+          <div class="stat-label">Classes Attended</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="percentageDisplay">0%</div>
+          <div class="stat-label">Attendance</div>
+        </div>
+      </div>
+      <div class="attendance-details" id="attendanceDetails">
+        <!-- Attendance records will be populated here -->
+      </div>
+    </div>
+  </div>
+  
+  <div class="footer">
+    <p>© 2025 RV College  Management System</p>
+  </div>
+
+  <script>
+    // Student data with expanded attendance details
+    const student = {
+      attendance: [
+        { 
+          subject: "Mathematics", 
+          percentage: 85, 
+          color: "#4CAF50",
+          records: [
+            { date: "Apr 10, 2025", status: "present" },
+            { date: "Apr 8, 2025", status: "present" },
+            { date: "Apr 5, 2025", status: "absent" },
+            { date: "Apr 3, 2025", status: "present" },
+            { date: "Apr 1, 2025", status: "present" },
+            { date: "Mar 29, 2025", status: "present" },
+            { date: "Mar 27, 2025", status: "present" },
+            { date: "Mar 24, 2025", status: "present" },
+            { date: "Mar 22, 2025", status: "absent" },
+            { date: "Mar 20, 2025", status: "present" }
+          ]
+        },
+        { 
+          subject: "Data Structures", 
+          percentage: 92, 
+          color: "#2196F3",
+          records: [
+            { date: "Apr 9, 2025", status: "present" },
+            { date: "Apr 7, 2025", status: "present" },
+            { date: "Apr 4, 2025", status: "present" },
+            { date: "Apr 2, 2025", status: "present" },
+            { date: "Mar 31, 2025", status: "present" },
+            { date: "Mar 28, 2025", status: "present" },
+            { date: "Mar 26, 2025", status: "absent" },
+            { date: "Mar 24, 2025", status: "present" },
+            { date: "Mar 21, 2025", status: "present" },
+            { date: "Mar 19, 2025", status: "present" }
+          ]
+        },
+        { 
+          subject: "Operating Systems", 
+          percentage: 78, 
+          color: "#FF9800",
+          records: [
+            { date: "Apr 10, 2025", status: "absent" },
+            { date: "Apr 8, 2025", status: "present" },
+            { date: "Apr 6, 2025", status: "present" },
+            { date: "Apr 4, 2025", status: "absent" },
+            { date: "Apr 2, 2025", status: "present" },
+            { date: "Mar 31, 2025", status: "present" },
+            { date: "Mar 29, 2025", status: "present" },
+            { date: "Mar 27, 2025", status: "absent" },
+            { date: "Mar 25, 2025", status: "present" },
+            { date: "Mar 23, 2025", status: "present" }
+          ]
+        },
+        { 
+          subject: "Web Development", 
+          percentage: 88, 
+          color: "#9C27B0",
+          records: [
+            { date: "Apr 9, 2025", status: "present" },
+            { date: "Apr 7, 2025", status: "present" },
+            { date: "Apr 5, 2025", status: "present" },
+            { date: "Apr 3, 2025", status: "absent" },
+            { date: "Apr 1, 2025", status: "present" },
+            { date: "Mar 30, 2025", status: "present" },
+            { date: "Mar 28, 2025", status: "present" },
+            { date: "Mar 26, 2025", status: "present" },
+            { date: "Mar 24, 2025", status: "present" },
+            { date: "Mar 22, 2025", status: "absent" }
+          ]
+        }
+      ]
+    };
+    
+    const attendanceSection = document.getElementById('attendance-section');
+    const modal = document.getElementById('attendanceModal');
+    
+    student.attendance.forEach(subject => {
+      const card = document.createElement('div');
+      card.className = 'card subject-card';
+      card.setAttribute('data-subject', subject.subject);
+      
+      const attendanceBar = `
+        <div class="attendance-label">
+          <span>${subject.subject}</span>
+          <span>${subject.percentage}%</span>
+        </div>
+        <div class="attendance-bar">
+          <div class="attendance-progress" style="width:0%; background-color:${subject.color}"></div>
+        </div>
+      `;
+      
+      card.innerHTML = attendanceBar;
+      attendanceSection.appendChild(card);
+      
+      // Add click event to show attendance details
+      card.addEventListener('click', () => {
+        showAttendanceDetails(subject);
+      });
+      
+      // Animate the progress bars
+      setTimeout(() => {
+        card.querySelector('.attendance-progress').style.width = `${subject.percentage}%`;
+      }, 200);
+    });
+    
+    function showAttendanceDetails(subject) {
+      // Set modal title and statistics
+      document.getElementById('modalSubjectTitle').textContent = `${subject.subject} Attendance`;
+      document.getElementById('totalClasses').textContent = subject.records.length;
+      
+      const attendedClasses = subject.records.filter(record => record.status === 'present').length;
+      document.getElementById('attendedClasses').textContent = attendedClasses;
+      document.getElementById('percentageDisplay').textContent = `${subject.percentage}%`;
+      
+      // Populate attendance records
+      const detailsContainer = document.getElementById('attendanceDetails');
+      detailsContainer.innerHTML = '';
+      
+      subject.records.forEach(record => {
+        const recordElement = document.createElement('div');
+        recordElement.className = `attendance-date ${record.status}`;
+        
+        recordElement.innerHTML = `
+          <span>${record.date}</span>
+          <span>${record.status === 'present' ? '✅ Present' : '❌ Absent'}</span>
+        `;
+        
+        detailsContainer.appendChild(recordElement);
+      });
+      
+      // Show modal
+      modal.classList.add('active');
+    }
+    
+    function closeModal() {
+      modal.classList.remove('active');
+    }
+    
+    // Close modal when clicking outside the content
+    modal.addEventListener('click', function(event) {
+      if (event.target === modal) {
+        closeModal();
+      }
+    });
+    
+    function markAttendance() {
+      const success = Math.random() > 0.5;
+      const message = document.getElementById('status-message');
+      const issueForm = document.getElementById('issue-form');
+            
+      if (success) {
+        message.textContent = '✅ Attendance marked successfully!';
+        message.className = 'message success';
+        issueForm.style.display = 'none';
+      } else {
+        message.textContent = '❌ Face ID verification failed!';
+        message.className = 'message fail';
+        issueForm.style.display = 'block';
+      }
+    }
+    
+    function submitReport() {
+      const text = document.getElementById('issue-text').value;
+      if (text.trim()) {
+        alert('Issue reported to teacher: ' + text);
+        document.getElementById('issue-text').value = '';
+        document.getElementById('issue-form').style.display = 'none';
+        document.getElementById('status-message').textContent = '';
+      }
+    }
+    
+    function cancelReport() {
+      document.getElementById('issue-text').value = '';
+      document.getElementById('issue-form').style.display = 'none';
+      document.getElementById('status-message').textContent = '';
+    }
+  </script>
+</body>
+</html>
